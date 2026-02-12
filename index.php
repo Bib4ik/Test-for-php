@@ -3,21 +3,14 @@ session_start();
 
 // Персонажи Clash Royale
 $characters = [
-        ['emoji' => '👑', 'name' => 'Король'],
-        ['emoji' => '🧙‍♂️', 'name' => 'Волшебник'],
-        ['emoji' => '⚔️', 'name' => 'Рыцарь'],
-        ['emoji' => '🏹', 'name' => 'Лучница'],
-        ['emoji' => '🐉', 'name' => 'Дракон'],
-        ['emoji' => '💀', 'name' => 'Скелеты'],
-        ['emoji' => '🛡️', 'name' => 'Гигант'],
-        ['emoji' => '🧊', 'name' => 'Ледяной Маг'],
-        ['emoji' => '⚡', 'name' => 'Электро Волшебник'],
-        ['emoji' => '👹', 'name' => 'Хог Райдер'],
-        ['emoji' => '🦇', 'name' => 'Летучие мыши'],
-        ['emoji' => '🏰', 'name' => 'Принцесса'],
-        ['emoji' => '💣', 'name' => 'Бомбардир'],
-        ['emoji' => '🔥', 'name' => 'Огненный Дух'],
-        ['emoji' => '🌪️', 'name' => 'Торнадо']
+        ['image' => 'images/Golem.png', 'name' => 'Голем'],
+        ['image' => 'images/mag.png', 'name' => 'Волшебник'],
+        ['image' => 'images/king.png', 'name' => 'Принц'],
+        ['image' => 'images/Banditka.png', 'name' => 'Бандитка'],
+        ['image' => 'images/Megaknight.png', 'name' => 'Мегарыцарь'],
+        ['image' => 'images/mini-peka.png', 'name' => 'Мини-Пека'],
+        ['image' => 'images/witch.png', 'name' => 'Ведьма'],
+        ['image' => 'images/varvaru.png', 'name' => 'Варвары'],
 ];
 
 // Обработка действий
@@ -202,8 +195,24 @@ if (isset($_SESSION['gameStarted']) && $_SESSION['gameStarted']) {
         }
 
         .card-character {
-            font-size: 72px;
             margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 180px;
+        }
+
+        .card-character img {
+            max-width: 200px;
+            max-height: 200px;
+            width: 100%;
+            height: auto;
+            object-fit: contain;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
+        }
+
+        .card-character-emoji {
+            font-size: 72px;
         }
 
         .card-name {
@@ -217,6 +226,25 @@ if (isset($_SESSION['gameStarted']) && $_SESSION['gameStarted']) {
             font-size: 18px;
             color: rgba(255,255,255,0.9);
             margin-top: 10px;
+        }
+
+        .card.revealed {
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .card.revealed:hover {
+            transform: scale(1.02);
+        }
+
+        .card-hidden {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .card-hidden:hover {
+            transform: scale(1.02);
         }
 
         .player-info {
@@ -263,6 +291,12 @@ if (isset($_SESSION['gameStarted']) && $_SESSION['gameStarted']) {
             border: 2px solid #ff6b6b;
         }
 
+        .character-image {
+            width: 50px;
+            height: 50px;
+            object-fit: contain;
+        }
+
         .character-emoji {
             font-size: 32px;
         }
@@ -306,15 +340,18 @@ if (isset($_SESSION['gameStarted']) && $_SESSION['gameStarted']) {
 
         <?php if (!$_SESSION['cardRevealed']): ?>
             <!-- Скрытая карта -->
-            <div class="card card-hidden">
-                <div class="card-character">❓</div>
-                <div class="card-name">Нажмите кнопку ниже</div>
+            <div class="card card-hidden" onclick="document.getElementById('revealCardForm').submit();">
+                <div class="card-character">
+                    <div class="card-character-emoji">❓</div>
+                </div>
+                <div class="card-name">Нажмите на карту</div>
             </div>
 
-            <form method="POST">
+            <form method="POST" id="revealCardForm" style="display: none;">
                 <input type="hidden" name="action" value="reveal_card">
-                <button type="submit">Открыть карту</button>
             </form>
+
+            <button type="button" onclick="document.getElementById('revealCardForm').submit();">Открыть карту</button>
 
         <?php else: ?>
             <!-- Открытая карта -->
@@ -322,20 +359,25 @@ if (isset($_SESSION['gameStarted']) && $_SESSION['gameStarted']) {
             $currentRole = $_SESSION['roles'][$_SESSION['currentPlayer'] - 1];
             if ($currentRole['role'] === 'spy'):
                 ?>
-                <div class="card spy">
-                    <div class="card-character">🕵️‍♂️</div>
+                <div class="card spy revealed" onclick="document.getElementById('nextPlayerForm').submit();">
+                    <div class="card-character">
+                        <div class="card-character-emoji">🕵️‍♂️</div>
+                    </div>
                     <div class="card-name">ШПИОН</div>
                     <div class="card-role">Вычислите персонажа других игроков!</div>
                 </div>
             <?php else: ?>
-                <div class="card">
-                    <div class="card-character"><?php echo $currentRole['character']['emoji']; ?></div>
-                    <div class="card-name"><?php echo $currentRole['character']['name']; ?></div>
+                <div class="card revealed" onclick="document.getElementById('nextPlayerForm').submit();">
+                    <div class="card-character">
+                        <img src="<?php echo htmlspecialchars($currentRole['character']['image']); ?>"
+                             alt="<?php echo htmlspecialchars($currentRole['character']['name']); ?>">
+                    </div>
+                    <div class="card-name"><?php echo htmlspecialchars($currentRole['character']['name']); ?></div>
                     <div class="card-role">Вычислите шпиона!</div>
                 </div>
             <?php endif; ?>
 
-            <form method="POST">
+            <form method="POST" id="nextPlayerForm">
                 <input type="hidden" name="action" value="next_player">
                 <button type="submit" class="next-button">
                     <?php echo ($_SESSION['currentPlayer'] < $_SESSION['totalPlayers']) ? 'Следующий игрок' : 'Показать результаты'; ?>
@@ -355,11 +397,17 @@ if (isset($_SESSION['gameStarted']) && $_SESSION['gameStarted']) {
                         <?php if ($role['role'] === 'spy'): ?>
                             <span style="color: #c92a2a;">🕵️‍♂️ ШПИОН</span>
                         <?php else: ?>
-                            <?php echo $role['character']['name']; ?>
+                            <?php echo htmlspecialchars($role['character']['name']); ?>
                         <?php endif; ?>
                     </div>
-                    <div class="character-emoji">
-                        <?php echo ($role['role'] === 'spy') ? '🎭' : $role['character']['emoji']; ?>
+                    <div>
+                        <?php if ($role['role'] === 'spy'): ?>
+                            <span class="character-emoji">🎭</span>
+                        <?php else: ?>
+                            <img src="<?php echo htmlspecialchars($role['character']['image']); ?>"
+                                 alt="<?php echo htmlspecialchars($role['character']['name']); ?>"
+                                 class="character-image">
+                        <?php endif; ?>
                     </div>
                 </div>
             <?php endforeach; ?>

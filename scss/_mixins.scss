@@ -1,0 +1,33 @@
+// Миксин для градиентных кнопок
+@mixin gradient-button($gradient) {
+  background: $gradient;
+  color: $white;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: $shadow-light;
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+// Миксин для карточек
+@mixin card-base {
+  border-radius: $border-radius-md;
+  padding: $spacing-lg;
+  text-align: center;
+  margin: $spacing-md 0;
+  box-shadow: $shadow-medium;
+}
+
+// Миксин для flexbox центрирования
+@mixin flex-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}

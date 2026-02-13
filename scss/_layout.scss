@@ -1,0 +1,50 @@
+
+.container {
+  background: $white;
+  border-radius: $border-radius-lg;
+  box-shadow: $shadow-heavy;
+  max-width: 500px;
+  width: 100%;
+  padding: $spacing-lg;
+}
+
+h1 {
+  text-align: center;
+  color: $primary-color;
+  margin-bottom: $spacing-sm;
+  font-size: $font-size-xxl;
+}
+
+h2 {
+  text-align: center;
+  margin-bottom: $spacing-md;
+  color: $primary-color;
+}
+
+.subtitle {
+  text-align: center;
+  color: $gray-dark;
+  margin-bottom: 30px;
+  font-size: $font-size-sm;
+}
+
+.player-info {
+  text-align: center;
+  margin-bottom: $spacing-md;
+}
+
+.player-number {
+  font-size: $font-size-lg;
+  color: $primary-color;
+  font-weight: bold;
+}
+
+.instruction {
+  background: $gray-light;
+  padding: 15px;
+  border-radius: $border-radius-sm;
+  margin: $spacing-md 0;
+  color: $gray-dark;
+  font-size: $font-size-sm;
+  text-align: center;
+}

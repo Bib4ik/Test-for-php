@@ -1,0 +1,39 @@
+// Цвета
+$primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+$secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+$spy-gradient: linear-gradient(135deg, #ff6b6b 0%, #c92a2a 100%);
+$hidden-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+
+$primary-color: #667eea;
+$secondary-color: #764ba2;
+$spy-color: #ff6b6b;
+$spy-dark: #c92a2a;
+
+$white: #ffffff;
+$gray-light: #f8f9fa;
+$gray-medium: #e0e0e0;
+$gray-dark: #666;
+$text-dark: #333;
+
+// Размеры
+$border-radius-sm: 10px;
+$border-radius-md: 15px;
+$border-radius-lg: 20px;
+
+$spacing-sm: 10px;
+$spacing-md: 20px;
+$spacing-lg: 40px;
+
+// Шрифты
+$font-family: 'Arial', sans-serif;
+$font-size-base: 16px;
+$font-size-sm: 14px;
+$font-size-md: 18px;
+$font-size-lg: 24px;
+$font-size-xl: 28px;
+$font-size-xxl: 32px;
+
+// Тени
+$shadow-light: 0 10px 20px rgba(102, 126, 234, 0.3);
+$shadow-medium: 0 10px 30px rgba(0, 0, 0, 0.2);
+$shadow-heavy: 0 20px 60px rgba(0, 0, 0, 0.3);

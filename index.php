@@ -4,7 +4,7 @@ session_start();
 // Персонажи Clash Royale
 $characters = [
         ['image' => 'images/Golem.png', 'name' => 'Голем'],
-        ['image' => 'images/mag.png', 'name' => 'Волшебник'],
+        ['image' => 'images/mag.png', 'name' => 'Маг'],
         ['image' => 'images/king.png', 'name' => 'Принц'],
         ['image' => 'images/Banditka.png', 'name' => 'Бандитка'],
         ['image' => 'images/Megaknight.png', 'name' => 'Мегарыцарь'],
@@ -54,6 +54,14 @@ if (isset($_POST['action'])) {
             exit;
 
         case 'next_player':
+            // Проверяем существование переменных
+            if (!isset($_SESSION['currentPlayer'])) {
+                $_SESSION['currentPlayer'] = 1;
+            }
+            if (!isset($_SESSION['totalPlayers'])) {
+                $_SESSION['totalPlayers'] = 1;
+            }
+
             if ($_SESSION['currentPlayer'] < $_SESSION['totalPlayers']) {
                 $_SESSION['currentPlayer']++;
                 $_SESSION['cardRevealed'] = false;
@@ -79,8 +87,7 @@ if (isset($_SESSION['gameStarted']) && $_SESSION['gameStarted']) {
         $screen = 'game';
     }
 }
-?>
-<!DOCTYPE html>
+?><!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
@@ -306,6 +313,15 @@ if (isset($_SESSION['gameStarted']) && $_SESSION['gameStarted']) {
             margin-bottom: 20px;
             color: #667eea;
         }
+
+        button.secondary {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            margin-top: 10px;
+        }
+
+        button.secondary:hover {
+            box-shadow: 0 10px 20px rgba(240, 147, 251, 0.3);
+        }
     </style>
 </head>
 <body>
@@ -331,7 +347,9 @@ if (isset($_SESSION['gameStarted']) && $_SESSION['gameStarted']) {
     <?php elseif ($screen === 'game'): ?>
         <!-- Игровой экран -->
         <div class="player-info">
-            <div class="player-number">Игрок <?php echo $_SESSION['currentPlayer']; ?></div>
+            <div class="player-number">
+                Игрок <?php echo isset($_SESSION['currentPlayer']) ? $_SESSION['currentPlayer'] : 1; ?>
+            </div>
         </div>
 
         <div class="instruction">
@@ -383,6 +401,12 @@ if (isset($_SESSION['gameStarted']) && $_SESSION['gameStarted']) {
                     <?php echo ($_SESSION['currentPlayer'] < $_SESSION['totalPlayers']) ? 'Следующий игрок' : 'Показать результаты'; ?>
                 </button>
             </form>
+
+            <form method="POST" id="resetGameForm">
+                <input type="hidden" name="action" value="reset_game">
+                <button type="submit" class="secondary">Новая игра</button>
+            </form>
+
         <?php endif; ?>
 
     <?php elseif ($screen === 'results'): ?>

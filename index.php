@@ -1,113 +1,49 @@
 <?php
 session_start();
 
-// Персонажи Clash Royale
-$characters = [
-        ['image' => 'images/Golem.png', 'name' => 'Голем'],
-        ['image' => 'images/mag.png', 'name' => 'Маг'],
-        ['image' => 'images/king.png', 'name' => 'Принц'],
-        ['image' => 'images/Banditka.png', 'name' => 'Бандитка'],
-        ['image' => 'images/Megaknight.png', 'name' => 'Мегарыцарь'],
-        ['image' => 'images/mini-peka.png', 'name' => 'Мини-Пека'],
-        ['image' => 'images/witch.png', 'name' => 'Ведьма'],
-        ['image' => 'images/varvaru.png', 'name' => 'Варвары'],
-];
+// Подключаем конфигурацию БД
+require_once "connect-bd.php";
 
-// Обработка действий
-if (isset($_POST['action'])) {
-    switch ($_POST['action']) {
-        case 'start_game':
-            $playerCount = intval($_POST['playerCount']);
-            if ($playerCount >= 3 && $playerCount <= 10) {
-                $_SESSION['totalPlayers'] = $playerCount;
-                $_SESSION['currentPlayer'] = 1;
-                $_SESSION['spyIndex'] = rand(1, $playerCount);
-                $_SESSION['selectedCharacter'] = $characters[array_rand($characters)];
-                $_SESSION['cardRevealed'] = false;
-                $_SESSION['roles'] = [];
+// Загружаем темы
+require_once "mechanism/Database.php";
 
-                // Инициализируем роли
-                for ($i = 1; $i <= $playerCount; $i++) {
-                    if ($i === $_SESSION['spyIndex']) {
-                        $_SESSION['roles'][] = [
-                                'player' => $i,
-                                'role' => 'spy',
-                                'character' => null
-                        ];
-                    } else {
-                        $_SESSION['roles'][] = [
-                                'player' => $i,
-                                'role' => 'regular',
-                                'character' => $_SESSION['selectedCharacter']
-                        ];
-                    }
-                }
-
-                $_SESSION['gameStarted'] = true;
-            }
-            header('Location: ' . $_SERVER['PHP_SELF']);
-            exit;
-
-        case 'reveal_card':
-            $_SESSION['cardRevealed'] = true;
-            header('Location: ' . $_SERVER['PHP_SELF']);
-            exit;
-
-        case 'next_player':
-            // Проверяем существование переменных
-            if (!isset($_SESSION['currentPlayer'])) {
-                $_SESSION['currentPlayer'] = 1;
-            }
-            if (!isset($_SESSION['totalPlayers'])) {
-                $_SESSION['totalPlayers'] = 1;
-            }
-
-            if ($_SESSION['currentPlayer'] < $_SESSION['totalPlayers']) {
-                $_SESSION['currentPlayer']++;
-                $_SESSION['cardRevealed'] = false;
-            } else {
-                $_SESSION['showResults'] = true;
-            }
-            header('Location: ' . $_SERVER['PHP_SELF']);
-            exit;
-
-        case 'reset_game':
-            session_destroy();
-            header('Location: ' . $_SERVER['PHP_SELF']);
-            exit;
-    }
-}
+// Обрабатываем действия игры
+require_once "mechanism/logic.php";
 
 // Определяем текущий экран
-$screen = 'setup';
-if (isset($_SESSION['gameStarted']) && $_SESSION['gameStarted']) {
-    if (isset($_SESSION['showResults']) && $_SESSION['showResults']) {
-        $screen = 'results';
-    } else {
-        $screen = 'game';
-    }
-}
-?><!DOCTYPE html>
+require_once "mechanism/screen-logic.php";
+
+/**
+ * @var mysqli $connect - Подключение к БД
+ * @var array $themes - Массив тем
+ * @var string $screen - Текущий экран (setup/game/results)
+ * @var string $currentThemeName - Название текущей темы
+ */
+?>
+
+<!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Шпион: Clash Royale Edition</title>
+    <title>Шпион</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 <div class="container">
     <h1>🎮 Шпион</h1>
-    <div class="subtitle">Clash Royale Edition</div>
 
     <?php if ($screen === 'setup'): ?>
         <!-- Экран настройки -->
         <form method="POST">
             <input type="hidden" name="action" value="start_game">
+            <input type="hidden" name="theme" value="clash_royale">
+
             <div class="input-group">
                 <label for="playerCount">Количество игроков:</label>
                 <input type="number" id="playerCount" name="playerCount" min="3" max="10" value="4" required>
             </div>
+
             <button type="submit">Начать игру</button>
         </form>
 
@@ -184,28 +120,11 @@ if (isset($_SESSION['gameStarted']) && $_SESSION['gameStarted']) {
         <!-- Экран результатов -->
         <h2>🎭 Результаты игры</h2>
 
-        <div class="results">
-            <?php foreach ($_SESSION['roles'] as $role): ?>
-                <div class="result-item <?php echo ($role['role'] === 'spy') ? 'spy-item' : ''; ?>">
-                    <div>
-                        <strong>Игрок <?php echo $role['player']; ?></strong><br>
-                        <?php if ($role['role'] === 'spy'): ?>
-                            <span style="color: #c92a2a;">🕵️‍♂️ ШПИОН</span>
-                        <?php else: ?>
-                            <?php echo htmlspecialchars($role['character']['name']); ?>
-                        <?php endif; ?>
-                    </div>
-                    <div>
-                        <?php if ($role['role'] === 'spy'): ?>
-                            <span class="character-emoji">🎭</span>
-                        <?php else: ?>
-                            <img src="<?php echo htmlspecialchars($role['character']['image']); ?>"
-                                 alt="<?php echo htmlspecialchars($role['character']['name']); ?>"
-                                 class="character-image">
-                        <?php endif; ?>
-                    </div>
-                </div>
-            <?php endforeach; ?>
+        <div class="card spy revealed" style="margin: 40px auto;">
+            <div class="card-character">
+                <div class="card-character-emoji" style="font-size: 120px;">🕵️‍♂️</div>
+            </div>
+            <div class="card-name" style="font-size: 28px; margin-top: 20px;">Удачи в поисках шпиона!</div>
         </div>
 
         <form method="POST" style="margin-top: 20px;">
@@ -216,3 +135,7 @@ if (isset($_SESSION['gameStarted']) && $_SESSION['gameStarted']) {
 </div>
 </body>
 </html>
+<?php
+// Закрываем соединение с БД
+mysqli_close($connect);
+?>

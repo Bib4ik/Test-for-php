@@ -1,24 +1,21 @@
 <?php
 session_start();
 
-// Подключаем конфигурацию БД
+// 1. Подключаем только базовые настройки
 require_once "connect-bd.php";
 
-// Загружаем темы
-require_once "mechanism/Database.php";
+// 2. Игровая логика срабатывает ТОЛЬКО при нажатии на кнопки в игре
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
+    require_once "mechanism/logic.php";
+}
 
-// Обрабатываем действия игры
-require_once "mechanism/logic.php";
-
-// Определяем текущий экран
+// 3. Определяем текущий экран (setup/game/results)
 require_once "mechanism/screen-logic.php";
 
-/**
- * @var mysqli $connect - Подключение к БД
- * @var array $themes - Массив тем
- * @var string $screen - Текущий экран (setup/game/results)
- * @var string $currentThemeName - Название текущей темы
- */
+// 4. Проверяем авторизацию
+$isLoggedIn = isset($_SESSION['user_id']);
+$userName = $isLoggedIn ? $_SESSION['username'] : 'Гость';
+
 ?>
 
 <!DOCTYPE html>
@@ -30,112 +27,114 @@ require_once "mechanism/screen-logic.php";
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+
+<header class="main-header">
+    <div class="user-info">
+        <span>Привет, <strong><?= htmlspecialchars($userName) ?></strong>!</span>
+    </div>
+    <div class="auth-buttons">
+        <?php if (!$isLoggedIn): ?>
+            <a href="login.php" class="btn-auth">Войти</a>
+            <a href="register.php" class="btn-auth">Регистрация</a>
+        <?php else: ?>
+            <a href="my-decks.php" class="btn-auth">Мои колоды</a>
+            <a href="logout.php" class="btn-logout">Выйти</a>
+        <?php endif; ?>
+    </div>
+</header>
+<main class="game-wrapper">
 <div class="container">
     <h1>🎮 Шпион</h1>
 
-    <?php if ($screen === 'setup'): ?>
-        <!-- Экран настройки -->
-        <form method="POST">
-            <input type="hidden" name="action" value="start_game">
-            <input type="hidden" name="theme" value="clash_royale">
-
-            <div class="input-group">
-                <label for="playerCount">Количество игроков:</label>
-                <input type="number" id="playerCount" name="playerCount" min="3" max="10" value="4" required>
-            </div>
-
-            <button type="submit">Начать игру</button>
-        </form>
-
-        <div class="instruction">
-            📝 Один игрок будет шпионом, остальные получат одинакового персонажа. Цель: вычислить шпиона!
-        </div>
-
-    <?php elseif ($screen === 'game'): ?>
-        <!-- Игровой экран -->
-        <div class="player-info">
-            <div class="player-number">
-                Игрок <?php echo isset($_SESSION['currentPlayer']) ? $_SESSION['currentPlayer'] : 1; ?>
+    <?php if (!$isLoggedIn): ?>
+        <div class="alert">
+            <p>Чтобы начать игру, создавать свои колоды и сохранять прогресс, пожалуйста, войдите в систему.</p>
+            <div style="margin-top: 20px;">
+                <a href="login.php" class="btn-auth" style="display:inline-block; padding: 10px 20px;">Войти</a>
+                <a href="register.php" class="btn-auth" style="display:inline-block; padding: 10px 20px; background:#2ecc71;">Создать аккаунт</a>
             </div>
         </div>
 
-        <div class="instruction">
-            🔒 Передайте устройство игроку и нажмите кнопку, чтобы узнать свою роль. Не показывайте другим!
-        </div>
+    <?php else: ?>
+        <?php if ($screen === 'setup'): ?>
+            <form action="" method="POST" class="game-form">
+                <input type="hidden" name="action" value="start_game">
 
-        <?php if (!$_SESSION['cardRevealed']): ?>
-            <!-- Скрытая карта -->
-            <div class="card card-hidden" onclick="document.getElementById('revealCardForm').submit();">
-                <div class="card-character">
-                    <div class="card-character-emoji">❓</div>
-                </div>
-                <div class="card-name">Нажмите на карту</div>
-            </div>
+                <label>Количество игроков:</label>
+                <input type="number" name="playerCount" min="3" max="10" value="3" required>
 
-            <form method="POST" id="revealCardForm" style="display: none;">
-                <input type="hidden" name="action" value="reveal_card">
+                <label for="theme">Выберите колоду:</label>
+                <select name="theme" id="theme" required>
+                    <?php
+                    $current_uid = $_SESSION['user_id'];
+                    $decks_query = mysqli_query($connect, "SELECT id, deck_name FROM decks WHERE user_id = 1 OR user_id = $current_uid");
+                    while ($deck = mysqli_fetch_assoc($decks_query)): ?>
+                        <option value="<?= $deck['id'] ?>">
+                            <?= htmlspecialchars($deck['deck_name']) ?>
+                        </option>
+                    <?php endwhile; ?>
+                </select>
+
+                <button type="submit">Начать игру</button>
             </form>
 
-            <button type="button" onclick="document.getElementById('revealCardForm').submit();">Открыть карту</button>
+            <div class="instruction">
+                📝 Один игрок будет шпионом, остальные получат одинакового персонажа. Цель: вычислить шпиона!
+            </div>
 
-        <?php else: ?>
-            <!-- Открытая карта -->
-            <?php
-            $currentRole = $_SESSION['roles'][$_SESSION['currentPlayer'] - 1];
-            if ($currentRole['role'] === 'spy'):
-                ?>
-                <div class="card spy revealed" onclick="document.getElementById('nextPlayerForm').submit();">
-                    <div class="card-character">
-                        <div class="card-character-emoji">🕵️‍♂️</div>
-                    </div>
-                    <div class="card-name">ШПИОН</div>
-                    <div class="card-role">Вычислите персонажа других игроков!</div>
+        <?php elseif ($screen === 'game'): ?>
+            <div class="player-info">
+                <div class="player-number">Игрок <?= $_SESSION['currentPlayer'] ?></div>
+            </div>
+
+            <?php if (!$_SESSION['cardRevealed']): ?>
+                <div class="card card-hidden" onclick="document.getElementById('revealCardForm').submit();">
+                    <div class="card-character-emoji">❓</div>
+                    <div class="card-name">Нажмите, чтобы узнать роль</div>
                 </div>
+                <form method="POST" id="revealCardForm" style="display: none;">
+                    <input type="hidden" name="action" value="reveal_card">
+                </form>
             <?php else: ?>
-                <div class="card revealed" onclick="document.getElementById('nextPlayerForm').submit();">
+                <?php
+                $currentRole = $_SESSION['roles'][$_SESSION['currentPlayer'] - 1];
+                $isSpy = ($currentRole['role'] === 'spy');
+                ?>
+                <div class="card revealed <?= $isSpy ? 'spy' : '' ?>">
                     <div class="card-character">
-                        <img src="<?php echo htmlspecialchars($currentRole['character']['image']); ?>"
-                             alt="<?php echo htmlspecialchars($currentRole['character']['name']); ?>">
+                        <?php if ($isSpy): ?>
+                            <div class="card-character-emoji">🕵️‍♂️</div>
+                        <?php else: ?>
+                            <img src="<?= htmlspecialchars($currentRole['character']['image']) ?>" alt="role">
+                        <?php endif; ?>
                     </div>
-                    <div class="card-name"><?php echo htmlspecialchars($currentRole['character']['name']); ?></div>
-                    <div class="card-role">Вычислите шпиона!</div>
+                    <div class="card-name"><?= $isSpy ? 'ШПИОН' : htmlspecialchars($currentRole['character']['name']) ?></div>
                 </div>
+
+                <form method="POST">
+                    <input type="hidden" name="action" value="next_player">
+                    <button type="submit" class="next-button">
+                        <?= ($_SESSION['currentPlayer'] < $_SESSION['totalPlayers']) ? 'Следующий игрок' : 'Результаты' ?>
+                    </button>
+                </form>
             <?php endif; ?>
 
-            <form method="POST" id="nextPlayerForm">
-                <input type="hidden" name="action" value="next_player">
-                <button type="submit" class="next-button">
-                    <?php echo ($_SESSION['currentPlayer'] < $_SESSION['totalPlayers']) ? 'Следующий игрок' : 'Показать результаты'; ?>
-                </button>
-            </form>
-
-            <form method="POST" id="resetGameForm">
+        <?php elseif ($screen === 'results'): ?>
+            <h2>🎭 Время голосовать!</h2>
+            <div class="card spy revealed" style="margin: 20px auto;">
+                <div class="card-character-emoji" style="font-size: 80px;">🕵️‍♂️</div>
+                <div class="card-name">Ищите шпиона среди вас!</div>
+            </div>
+            <form method="POST">
                 <input type="hidden" name="action" value="reset_game">
-                <button type="submit" class="secondary">Новая игра</button>
+                <button type="submit">Завершить и выйти</button>
             </form>
-
         <?php endif; ?>
 
-    <?php elseif ($screen === 'results'): ?>
-        <!-- Экран результатов -->
-        <h2>🎭 Результаты игры</h2>
-
-        <div class="card spy revealed" style="margin: 40px auto;">
-            <div class="card-character">
-                <div class="card-character-emoji" style="font-size: 120px;">🕵️‍♂️</div>
-            </div>
-            <div class="card-name" style="font-size: 28px; margin-top: 20px;">Удачи в поисках шпиона!</div>
-        </div>
-
-        <form method="POST" style="margin-top: 20px;">
-            <input type="hidden" name="action" value="reset_game">
-            <button type="submit">Новая игра</button>
-        </form>
     <?php endif; ?>
 </div>
+</main>
+
 </body>
 </html>
-<?php
-// Закрываем соединение с БД
-mysqli_close($connect);
-?>
+<?php mysqli_close($connect); ?>

@@ -5,29 +5,18 @@
 }
 
 body {
-  font-family: "Arial", sans-serif;
+  margin: 0;
+  font-family: 'Inter', sans-serif;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   min-height: 100vh;
   display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 20px;
-}
-
-.container {
-  background: #ffffff;
-  border-radius: 20px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-  max-width: 500px;
-  width: 100%;
-  padding: 40px;
+  flex-direction: column; /* Элементы идут друг под другом: сначала Header, потом контент */
 }
 
 h1 {
-  text-align: center;
   color: #667eea;
-  margin-bottom: 10px;
-  font-size: 32px;
+  margin-bottom: 25px;
+  font-size: 2rem;
 }
 
 h2 {
@@ -227,3 +216,168 @@ button.next-button {
 }
 
 /*# sourceMappingURL=style.css.map */
+
+/* 2. Шапка (Header) */
+.main-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 40px;
+  height: 70px;
+  background-color: rgba(44, 62, 80, 0.9); /* Темный фон с прозрачностью */
+  color: white;
+  position: sticky; /* Шапка не уплывает при скролле */
+  top: 0;
+  z-index: 1000;
+  backdrop-filter: blur(10px); /* Эффект размытия стекла */
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.user-info strong {
+  color: #3498db;
+}
+
+.auth-buttons {
+  display: flex;
+  gap: 15px;
+}
+
+/* 3. Кнопки */
+.btn-auth, .btn-logout, button {
+  text-decoration: none;
+  color: white;
+  padding: 10px 22px;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-auth, button {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.btn-auth:hover, button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 15px rgba(102, 126, 234, 0.4);
+}
+
+.btn-logout {
+  background: #e74c3c;
+}
+
+.btn-logout:hover {
+  background: #c0392b;
+  transform: translateY(-2px);
+}
+
+/* 4. Основная карточка (Container) */
+.container {
+  background: #ffffff;
+  border-radius: 24px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  max-width: 500px;
+  width: 90%;
+  padding: 40px;
+  text-align: center;
+
+  /* Это свойство автоматически распределит отступы сверху, снизу и по бокам */
+  transform: translateY(-35px);
+}
+
+/* 5. Поля ввода и Селектор (Выпадающий список) */
+input[type=number], select {
+  width: 100%;
+  padding: 14px;
+  margin-bottom: 20px;
+  border: 2px solid #eee;
+  border-radius: 12px;
+  font-size: 16px;
+  appearance: none; /* Убираем стандартную стрелку браузера */
+  background-color: #f8f9fa;
+  transition: border-color 0.3s;
+}
+
+/* Красивый выпадающий список */
+select, input[type=number] {
+  width: 100%;
+  padding: 12px;
+  margin: 10px 0 20px;
+  border: 2px solid #eee;
+  border-radius: 10px;
+  font-size: 16px;
+  background-color: #f8f9fa;
+  outline: none;
+  transition: border-color 0.3s;
+}
+
+select:focus, input:focus {
+  border-color: #667eea;
+}
+
+/* Эффект нажатия на кнопки */
+button {
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+}
+
+input:focus, select:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+/* 6. Игровые элементы (Карточки ролей) */
+.card-hidden, .card.revealed {
+  border-radius: 20px;
+  padding: 30px;
+  margin: 20px 0;
+  min-height: 250px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  color: white;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.card-hidden {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+.card.revealed {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.card.spy {
+  background: linear-gradient(135deg, #ff6b6b 0%, #c92a2a 100%);
+}
+
+.card-character img {
+  max-width: 150px;
+  filter: drop-shadow(0 5px 15px rgba(0,0,0,0.2));
+}
+
+.game-wrapper {
+  flex-grow: 1; /* Занимает всё место от шапки до низа */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* 7. Адаптивность */
+@media (max-width: 600px) {
+  .main-header { padding: 0 15px; }
+  .user-info { display: none; } /* Прячем текст на мобилках для места */
+  .container { padding: 25px; margin-top: 30px; }
+}
+
